@@ -1,0 +1,24 @@
+# UniqueBows Configuration File
+# Plugin version: 1.0.0
+
+version: "1.0"
+
+# Debug mode - set to true for detailed logging
+debug: false
+
+# Check for plugin updates on startup
+update-check: true
+
+# General plugin settings
+settings:
+  # Prefix for all plugin messages
+  prefix: "&6[UniqueBows] &r"
+
+  # Default language (currently only supports Vietnamese)
+  language: "vi"
+
+  # Enable/disable specific features
+  features:
+    recipes: true
+    menu: true
+    admin-commands: true

@@ -1,0 +1,148 @@
+# UniqueBows - Recipes Configuration
+# Công thức chế tạo cho các loại cung
+
+# Ice Bow Recipe
+ice_bow:
+  shape:
+    - " SI"
+    - "S B"
+    - " SI"
+  ingredients:
+    S: "STICK"
+    I: "ICE"
+    B: "BOW"
+
+# Fire Bow Recipe
+fire_bow:
+  shape:
+    - " SF"
+    - "S B"
+    - " SF"
+  ingredients:
+    S: "STICK"
+    F: "FIRE_CHARGE"
+    B: "BOW"
+
+# Wither Bow Recipe
+wither_bow:
+  shape:
+    - " SW"
+    - "S B"
+    - " SW"
+  ingredients:
+    S: "STICK"
+    W: "WITHER_SKELETON_SKULL"
+    B: "BOW"
+
+# Earthquake Bow Recipe
+earthquake_bow:
+  shape:
+    - " SC"
+    - "S B"
+    - " SC"
+  ingredients:
+    S: "STICK"
+    C: "COBBLESTONE"
+    B: "BOW"
+
+# Meteor Bow Recipe
+meteor_bow:
+  shape:
+    - " SM"
+    - "S B"
+    - " SM"
+  ingredients:
+    S: "STICK"
+    M: "MAGMA_BLOCK"
+    B: "BOW"
+
+# Poison Bow Recipe
+poison_bow:
+  shape:
+    - " SP"
+    - "S B"
+    - " SP"
+  ingredients:
+    S: "STICK"
+    P: "SPIDER_EYE"
+    B: "BOW"
+
+# Blaze Bow Recipe
+blaze_bow:
+  shape:
+    - " SR"
+    - "S B"
+    - " SR"
+  ingredients:
+    S: "STICK"
+    R: "BLAZE_ROD"
+    B: "BOW"
+
+# Auto Bow Recipe
+auto_bow:
+  shape:
+    - " SR"
+    - "S B"
+    - " SR"
+  ingredients:
+    S: "STICK"
+    R: "REDSTONE"
+    B: "BOW"
+
+# Thunder Bow Recipe
+thunder_bow:
+  shape:
+    - " SL"
+    - "S B"
+    - " SL"
+  ingredients:
+    S: "STICK"
+    L: "LIGHTNING_ROD"
+    B: "BOW"
+
+# Pulsar Bow Recipe
+pulsar_bow:
+  shape:
+    - " SO"
+    - "S B"
+    - " SO"
+  ingredients:
+    S: "STICK"
+    O: "OBSIDIAN"
+    B: "BOW"
+
+# Teleport Bow Recipe
+teleport_bow:
+  shape:
+    - " SE"
+    - "S B"
+    - " SE"
+  ingredients:
+    S: "STICK"
+    E: "ENDER_PEARL"
+    B: "BOW"
+
+# Advanced Recipe Examples (Commented out - can be enabled later)
+#
+# # More complex recipe for special bow
+# special_bow:
+#   shape:
+#     - "DGD"
+#     - "GBG"
+#     - "DGD"
+#   ingredients:
+#     D: "DIAMOND"
+#     G: "GOLD_INGOT"
+#     B: "BOW"
+#
+# # Recipe using multiple different materials
+# ultimate_bow:
+#   shape:
+#     - "NEN"
+#     - "DBD"
+#     - "NEN"
+#   ingredients:
+#     N: "NETHERITE_INGOT"
+#     E: "ELYTRA"
+#     D: "DRAGON_HEAD"
+#     B: "BOW"

@@ -1,0 +1,46 @@
+name: UniqueBows
+version: '1.0.0'
+main: com.NguyenDevs.uniqueBows.UniqueBows
+api-version: '1.19'
+commands:
+  ub:
+    description: UniqueBows plugin main command
+    usage: /ub [menu|recipe|admin|reload]
+    aliases: [uniquebows, ubows]
+
+permissions:
+  ub.*:
+    description: Admin permission to use all features
+    default: op
+    children:
+      - ub.admin
+      - ub.use
+  ub.use:
+    description: Basic permissions to view menus and use the bows
+    default: true
+    children:
+      - ub.menu
+      - ub.recipe
+      - ub.bow.use
+  ub.admin:
+    description: Admin permission to use all features
+    default: op
+    children:
+      - ub.use
+      - ub.reload
+      - ub.admin.menu
+  ub.reload:
+    description: Permission to reload plugin
+    default: op
+  ub.admin.menu:
+    description: Permission to use Admin menu
+    default: op
+  ub.menu:
+    description: Permission to use Bow menu
+    default: true
+  ub.recipe:
+    description: Permission to craft bow
+    default: true
+  ub.bow.use:
+    description: Permisison to use bow
+    default: true

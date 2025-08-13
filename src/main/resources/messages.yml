@@ -1,0 +1,80 @@
+# UniqueBows - Messages Configuration
+# All plugin messages
+
+# General Messages
+prefix: "&6[UniqueBows] &r"
+no-permission: "&cYou don't have permission to use this command!"
+plugin-reloaded: "&aPlugin reloaded successfully!"
+player-only: "&cOnly players can use this command!"
+unknown-command: "&cUnknown command! Use &e/ub &cto see the command list."
+
+# Bow Messages
+bow-received: "&aYou have received {bow}&a!"
+bow-delay: "&cYou must wait &e{time} &cseconds before using this bow again!"
+bow-not-found: "&cBow not found!"
+recipe-not-found: "&cRecipe for this bow not found!"
+
+# Menu Titles
+menu-title: "&6&lUnique Bows Menu"
+admin-menu-title: "&c&lAdmin Bows Menu"
+recipe-menu-title: "&e&lBow Recipes"
+
+# Menu Items
+menu-border-name: "&7"
+recipe-view-lore: "&e&lClick to view the recipe!"
+admin-get-bow: "&a&lClick to get this bow!"
+back-button: "&c&lBack"
+recipe-result: "&a&lResult"
+
+# Command Help
+command-help:
+  header: "&6&l=== UniqueBows Commands ==="
+  user-commands: "&e&lPlayer Commands:"
+  admin-commands: "&c&lAdmin Commands:"
+  menu: "&e/ub menu &7- Open the bow list menu"
+  recipe: "&e/ub recipe &7- View crafting recipes"
+  admin: "&c/ub admin &7- Open the admin menu"
+  reload: "&c/ub reload &7- Reload the plugin"
+  footer: "&6&l=========================="
+
+# Bow Effects Messages
+effects:
+  ice:
+    freeze: "&b{target} has been frozen!"
+  fire:
+    burn: "&c{target} is burning!"
+  wither:
+    hit: "&8A wither skull has struck {target}!"
+  poison:
+    poisoned: "&2{target} has been poisoned!"
+  thunder:
+    struck: "&d{target} was struck by lightning!"
+  teleport:
+    success: "&aTeleport successful!"
+    failed: "&cUnable to teleport to this location!"
+  auto:
+    arrows-shot: "&9Shot {count} arrows!"
+  blaze:
+    flame-hit: "&eFlame hit {target}!"
+  pulsar:
+    black-hole: "&5A black hole has been created!"
+
+# Error Messages
+errors:
+  bow-creation-failed: "&cFailed to create bow!"
+  recipe-load-failed: "&cFailed to load recipe!"
+  config-save-failed: "&cFailed to save configuration!"
+  permission-denied: "&cYou don't have permission to use this feature!"
+
+# Success Messages
+success:
+  bow-given: "&aGave {bow} &ato {player}!"
+  config-saved: "&aConfiguration saved!"
+  recipe-registered: "&aRecipe for {bow} has been registered!"
+
+# Admin Messages
+admin:
+  bow-list-header: "&c&l=== Admin Bow List ==="
+  bow-info: "&7ID: &f{id} &7| &7Name: {name} &7| &7Delay: &f{delay}s"
+  bow-status: "&7Enabled: {enabled} &7| &7Craftable: {craftable}"
+  reload-complete: "&aPlugin reload complete! Loaded {bows} bows and {recipes} recipes."

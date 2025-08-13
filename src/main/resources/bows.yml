@@ -1,0 +1,137 @@
+# UniqueBows - Bows Configuration
+# Cấu hình cho tất cả các loại cung trong plugin
+
+ice_bow:
+  enabled: true
+  name: "&b&lIce Bow"
+  lore:
+    - "&7Đóng băng kẻ địch khi bắn trúng"
+    - "&7Delay: 5 giây"
+    - ""
+    - "&b❄ &fCung băng giá lạnh"
+  craftable: true
+  unbreakable: true
+  delay: 5
+
+fire_bow:
+  enabled: true
+  name: "&c&lFire Bow"
+  lore:
+    - "&7Gây cháy kẻ địch khi bắn trúng"
+    - "&7Delay: 3 giây"
+    - ""
+    - "&c🔥 &fCung lửa thiêu đốt"
+  craftable: true
+  unbreakable: true
+  delay: 3
+
+wither_bow:
+  enabled: true
+  name: "&8&lWither Bow"
+  lore:
+    - "&7Bắn đầu lâu wither"
+    - "&7Delay: 8 giây"
+    - ""
+    - "&8💀 &fCung của bóng tối"
+  craftable: true
+  unbreakable: true
+  delay: 8
+
+earthquake_bow:
+  enabled: true
+  name: "&6&lEarthquake Bow"
+  lore:
+    - "&7Gây động đất tại vị trí kẻ địch"
+    - "&7Delay: 15 giây"
+    - ""
+    - "&6🌍 &fCung địa chấn mạnh mẽ"
+    - "&c&lChưa hoàn thiện - Coming Soon!"
+  craftable: true
+  unbreakable: true
+  delay: 15
+
+meteor_bow:
+  enabled: true
+  name: "&4&lMeteor Bow"
+  lore:
+    - "&7Triệu hồi thiên thạch từ trời"
+    - "&7Delay: 20 giây"
+    - ""
+    - "&4☄ &fCung thiên thạch hủy diệt"
+    - "&c&lChưa hoàn thiện - Coming Soon!"
+  craftable: true
+  unbreakable: true
+  delay: 20
+
+poison_bow:
+  enabled: true
+  name: "&2&lPoison Bow"
+  lore:
+    - "&7Gây độc cho kẻ địch"
+    - "&7Delay: 4 giây"
+    - ""
+    - "&2☠ &fCung độc chết người"
+  craftable: true
+  unbreakable: true
+  delay: 4
+
+blaze_bow:
+  enabled: true
+  name: "&e&lBlaze Bow"
+  lore:
+    - "&7Bắn tia lửa gây bỏng cháy"
+    - "&7Delay: 6 giây"
+    - ""
+    - "&e🔥 &fCung ngọn lửa rực rỡ"
+  craftable: true
+  unbreakable: true
+  delay: 6
+
+auto_bow:
+  enabled: true
+  name: "&9&lAuto Bow"
+  lore:
+    - "&7Bắn liên tục nhiều mũi tên"
+    - "&7Từ 5-50 mũi tùy thời gian giữ"
+    - "&7Delay: 10 giây"
+    - ""
+    - "&9⚡ &fCung tự động hiện đại"
+  craftable: true
+  unbreakable: true
+  delay: 10
+
+thunder_bow:
+  enabled: true
+  name: "&d&lThunder Bow"
+  lore:
+    - "&7Gây sấm sét tại kẻ địch"
+    - "&7Delay: 12 giây"
+    - ""
+    - "&d⚡ &fCung sấm sét thần thánh"
+  craftable: true
+  unbreakable: true
+  delay: 12
+
+pulsar_bow:
+  enabled: true
+  name: "&5&lPulsar Bow"
+  lore:
+    - "&7Tạo hố đen hút tất cả kẻ địch"
+    - "&7Delay: 25 giây"
+    - ""
+    - "&5🌀 &fCung hố đen vũ trụ"
+  craftable: true
+  unbreakable: true
+  delay: 25
+
+teleport_bow:
+  enabled: true
+  name: "<gradient:#00ff00:#0099ff>Teleport Bow</gradient>"
+  lore:
+    - "&7Dịch chuyển đến vị trí mũi tên"
+    - "&7Delay: 8 giây"
+    - ""
+    - "&a🌀 &fCung dịch chuyển tức thời"
+  craftable: true
+  unbreakable: true
+  delay: 8

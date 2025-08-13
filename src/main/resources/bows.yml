@@ -1,137 +1,157 @@
 # UniqueBows - Bows Configuration
-# Cấu hình cho tất cả các loại cung trong plugin
+# Configuration for all bow types in the plugin
 
-ice_bow:
+auto_bow:
   enabled: true
-  name: "&b&lIce Bow"
+  custom-model-data: none
+  name: "<gradient:#00ccff:#0033cc>Auto Bow</gradient>"
   lore:
-    - "&7Đóng băng kẻ địch khi bắn trúng"
-    - "&7Delay: 5 giây"
+    - "&7Fires multiple arrows continuously"
+    - "&7From 5-50 arrows depending on charge time"
+    - "&7Delay: 10 seconds"
     - ""
-    - "&b❄ &fCung băng giá lạnh"
+    - "&9⚡ &fThe modern auto bow"
   craftable: true
   unbreakable: true
-  delay: 5
+  delay: 10
+  min-arrow: 10
+  max-arrow: 50
+
+blaze_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#ffeb3b:#ff9800>Blaze Bow</gradient>"
+  lore:
+    - "&7Shoots fire sparks that burn enemies"
+    - "&7Delay: 6 seconds"
+    - ""
+    - "&e🔥 &fThe radiant blaze bow"
+  craftable: true
+  unbreakable: true
+  delay: 6
+  burn-duration: 5
+  damage: 8
+
+earthquake_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#ffaa00:#cc6600>Earthquake Bow</gradient>"
+  lore:
+    - "&7Causes an earthquake at the enemy's location"
+    - "&7Delay: 15 seconds"
+    - ""
+    - "&6🌍 &fThe mighty quake bow"
+  craftable: true
+  unbreakable: true
+  delay: 10
+  shock-strength: 2
 
 fire_bow:
   enabled: true
-  name: "&c&lFire Bow"
+  custom-model-data: none
+  name: "<gradient:#ff6600:#ff0000>Fire Bow</gradient>"
   lore:
-    - "&7Gây cháy kẻ địch khi bắn trúng"
-    - "&7Delay: 3 giây"
+    - "&7Sets enemies on fire"
+    - "&7Delay: 3 seconds"
     - ""
-    - "&c🔥 &fCung lửa thiêu đốt"
+    - "&c🔥 &fThe blazing fire bow"
   craftable: true
   unbreakable: true
   delay: 3
+  burn-duration: 5
 
-wither_bow:
+ice_bow:
   enabled: true
-  name: "&8&lWither Bow"
+  custom-model-data: none
+  name: "<gradient:#00e1ff:#0077ff>Ice Bow</gradient>"
   lore:
-    - "&7Bắn đầu lâu wither"
-    - "&7Delay: 8 giây"
+    - "&7Freezes enemies on hit"
+    - "&7Delay: 5 seconds"
     - ""
-    - "&8💀 &fCung của bóng tối"
+    - "&b❄ &fThe chilling ice bow"
+  craftable: true
+  unbreakable: true
+  delay: 3
+  freeze-duration: 5
+
+meteor_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#ff4d4d:#660000>Meteor Bow</gradient>"
+  lore:
+    - "&7Summons a meteor from the sky"
+    - "&7Delay: 20 seconds"
+    - ""
+    - "&4☄ &fThe devastating meteor bow"
+  craftable: true
+  unbreakable: true
+  delay: 10
+  damage: 10
+
+poison_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#33cc33:#006600>Poison Bow</gradient>"
+  lore:
+    - "&7Poisons enemies on hit"
+    - "&7Delay: 4 seconds"
+    - ""
+    - "&2☠ &fThe deadly poison bow"
+  craftable: true
+  unbreakable: true
+  delay: 4
+  poison-duration: 5
+
+pulsar_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#ff00ff:#660066>Pulsar Bow</gradient>"
+  lore:
+    - "&7Creates a black hole that pulls enemies in"
+    - "&7Delay: 25 seconds"
+    - ""
+    - "&5🌀 &fThe cosmic black hole bow"
+  craftable: true
+  unbreakable: true
+  delay: 25
+  pull-duration: 5
+
+teleport_bow:
+  enabled: true
+  custom-model-data: none
+  name: "<gradient:#00ff00:#0099ff>Teleport Bow</gradient>"
+  lore:
+    - "&7Teleports you to the arrow's location"
+    - "&7Delay: 8 seconds"
+    - ""
+    - "&a🌀 &fThe instant teleport bow"
   craftable: true
   unbreakable: true
   delay: 8
 
-earthquake_bow:
-  enabled: true
-  name: "&6&lEarthquake Bow"
-  lore:
-    - "&7Gây động đất tại vị trí kẻ địch"
-    - "&7Delay: 15 giây"
-    - ""
-    - "&6🌍 &fCung địa chấn mạnh mẽ"
-    - "&c&lChưa hoàn thiện - Coming Soon!"
-  craftable: true
-  unbreakable: true
-  delay: 15
-
-meteor_bow:
-  enabled: true
-  name: "&4&lMeteor Bow"
-  lore:
-    - "&7Triệu hồi thiên thạch từ trời"
-    - "&7Delay: 20 giây"
-    - ""
-    - "&4☄ &fCung thiên thạch hủy diệt"
-    - "&c&lChưa hoàn thiện - Coming Soon!"
-  craftable: true
-  unbreakable: true
-  delay: 20
-
-poison_bow:
-  enabled: true
-  name: "&2&lPoison Bow"
-  lore:
-    - "&7Gây độc cho kẻ địch"
-    - "&7Delay: 4 giây"
-    - ""
-    - "&2☠ &fCung độc chết người"
-  craftable: true
-  unbreakable: true
-  delay: 4
-
-blaze_bow:
-  enabled: true
-  name: "&e&lBlaze Bow"
-  lore:
-    - "&7Bắn tia lửa gây bỏng cháy"
-    - "&7Delay: 6 giây"
-    - ""
-    - "&e🔥 &fCung ngọn lửa rực rỡ"
-  craftable: true
-  unbreakable: true
-  delay: 6
-
-auto_bow:
-  enabled: true
-  name: "&9&lAuto Bow"
-  lore:
-    - "&7Bắn liên tục nhiều mũi tên"
-    - "&7Từ 5-50 mũi tùy thời gian giữ"
-    - "&7Delay: 10 giây"
-    - ""
-    - "&9⚡ &fCung tự động hiện đại"
-  craftable: true
-  unbreakable: true
-  delay: 10
-
 thunder_bow:
   enabled: true
-  name: "&d&lThunder Bow"
+  custom-model-data: none
+  name: "<gradient:#cc66ff:#6600cc>Thunder Bow</gradient>"
   lore:
-    - "&7Gây sấm sét tại kẻ địch"
-    - "&7Delay: 12 giây"
+    - "&7Strikes lightning at enemies"
+    - "&7Delay: 12 seconds"
     - ""
-    - "&d⚡ &fCung sấm sét thần thánh"
+    - "&d⚡ &fThe divine thunder bow"
   craftable: true
   unbreakable: true
   delay: 12
 
-pulsar_bow:
+wither_bow:
   enabled: true
-  name: "&5&lPulsar Bow"
+  custom-model-data: none
+  name: "<gradient:#555555:#000000>Wither Bow</gradient>"
   lore:
-    - "&7Tạo hố đen hút tất cả kẻ địch"
-    - "&7Delay: 25 giây"
+    - "&7Shoots wither skulls"
+    - "&7Delay: 8 seconds"
     - ""
-    - "&5🌀 &fCung hố đen vũ trụ"
-  craftable: true
-  unbreakable: true
-  delay: 25
-
-teleport_bow:
-  enabled: true
-  name: "<gradient:#00ff00:#0099ff>Teleport Bow</gradient>"
-  lore:
-    - "&7Dịch chuyển đến vị trí mũi tên"
-    - "&7Delay: 8 giây"
-    - ""
-    - "&a🌀 &fCung dịch chuyển tức thời"
+    - "&8💀 &fBow of darkness"
   craftable: true
   unbreakable: true
   delay: 8
+  wither-duration: 5

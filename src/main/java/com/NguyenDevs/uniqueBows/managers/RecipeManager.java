@@ -92,7 +92,6 @@ public class RecipeManager {
             try {
                 Bukkit.removeRecipe(recipe.getKey());
             } catch (Exception e) {
-                // Ignore errors when removing recipes
             }
         }
     }

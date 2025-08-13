@@ -2,7 +2,7 @@
 # All plugin messages
 
 # General Messages
-prefix: "&6[UniqueBows] &r"
+prefix: "&7[&eUnique&6Bows&7]"
 no-permission: "&cYou don't have permission to use this command!"
 plugin-reloaded: "&aPlugin reloaded successfully!"
 player-only: "&cOnly players can use this command!"
@@ -15,16 +15,16 @@ bow-not-found: "&cBow not found!"
 recipe-not-found: "&cRecipe for this bow not found!"
 
 # Menu Titles
-menu-title: "&6&lUnique Bows Menu"
-admin-menu-title: "&c&lAdmin Bows Menu"
-recipe-menu-title: "&e&lBow Recipes"
+menu-title: "&fUnique Bows Menu"
+admin-menu-title: "&fAdmin Bows Menu"
+recipe-menu-title: "&fBow Recipes"
 
 # Menu Items
-menu-border-name: "&7"
-recipe-view-lore: "&e&lClick to view the recipe!"
-admin-get-bow: "&a&lClick to get this bow!"
-back-button: "&c&lBack"
-recipe-result: "&a&lResult"
+menu-border-name: " "
+recipe-view-lore: "&eClick to view the recipe!"
+admin-get-bow: "&aClick to get this bow!"
+back-button: "&cBack"
+recipe-result: "&aResult"
 
 # Command Help
 command-help:
@@ -36,28 +36,6 @@ command-help:
   admin: "&c/ub admin &7- Open the admin menu"
   reload: "&c/ub reload &7- Reload the plugin"
   footer: "&6&l=========================="
-
-# Bow Effects Messages
-effects:
-  ice:
-    freeze: "&b{target} has been frozen!"
-  fire:
-    burn: "&c{target} is burning!"
-  wither:
-    hit: "&8A wither skull has struck {target}!"
-  poison:
-    poisoned: "&2{target} has been poisoned!"
-  thunder:
-    struck: "&d{target} was struck by lightning!"
-  teleport:
-    success: "&aTeleport successful!"
-    failed: "&cUnable to teleport to this location!"
-  auto:
-    arrows-shot: "&9Shot {count} arrows!"
-  blaze:
-    flame-hit: "&eFlame hit {target}!"
-  pulsar:
-    black-hole: "&5A black hole has been created!"
 
 # Error Messages
 errors:

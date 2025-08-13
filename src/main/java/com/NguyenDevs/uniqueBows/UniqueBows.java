@@ -6,6 +6,8 @@ import com.NguyenDevs.uniqueBows.listeners.bowlisteners.*;
 import com.NguyenDevs.uniqueBows.managers.BowManager;
 import com.NguyenDevs.uniqueBows.managers.ConfigManager;
 import com.NguyenDevs.uniqueBows.managers.RecipeManager;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class UniqueBows extends JavaPlugin {
@@ -35,7 +37,7 @@ public final class UniqueBows extends JavaPlugin {
 
         // Register listeners
         registerListeners();
-
+        printLogo();
         getLogger().info("UniqueBows plugin has been enabled!");
     }
 
@@ -53,8 +55,8 @@ public final class UniqueBows extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new IceBowListener(this), this);
         getServer().getPluginManager().registerEvents(new FireBowListener(this), this);
         getServer().getPluginManager().registerEvents(new WitherBowListener(this), this);
-        //getServer().getPluginManager().registerEvents(new EarthQuakeBowListener(this), this);
-        //getServer().getPluginManager().registerEvents(new MeteorBowListener(this), this);
+        getServer().getPluginManager().registerEvents(new EarthQuakeBowListener(this), this);
+        getServer().getPluginManager().registerEvents(new MeteorBowListener(this), this);
         getServer().getPluginManager().registerEvents(new PoisonBowListener(this), this);
         getServer().getPluginManager().registerEvents(new BlazeBowListener(this), this);
         getServer().getPluginManager().registerEvents(new AutoBowListener(this), this);
@@ -83,5 +85,27 @@ public final class UniqueBows extends JavaPlugin {
 
     public RecipeManager getRecipeManager() {
         return recipeManager;
+    }
+
+    public void printLogo() {
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e   ██╗   ██╗███╗   ██╗██╗ ██████╗ ██╗   ██╗███████╗"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e   ██║   ██║████╗  ██║██║██╔═══██╗██║   ██║██╔════╝"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e   ██║   ██║██╔██╗ ██║██║██║   ██║██║   ██║█████╗  "));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e   ██║   ██║██║╚██╗██║██║██║▄▄ ██║██║   ██║██╔══╝  "));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e   ╚██████╔╝██║ ╚████║██║╚██████╔╝╚██████╔╝███████╗"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e    ╚═════╝ ╚═╝  ╚═══╝╚═╝ ╚══▀▀═╝  ╚═════╝ ╚══════╝"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ██████╗  ██████╗ ██╗    ██╗███████╗"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ██╔══██╗██╔═══██╗██║    ██║██╔════╝"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ██████╔╝██║   ██║██║ █╗ ██║███████╗"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ██╔══██╗██║   ██║██║███╗██║╚════██║"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ██████╔╝╚██████╔╝╚███╔███╔╝███████║"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6   ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚══════╝"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e         Unique Bows"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6         Version " + getDescription().getVersion()));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&b         Development by NguyenDevs"));
+        Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
     }
 }

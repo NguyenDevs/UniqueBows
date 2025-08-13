@@ -11,13 +11,19 @@ public class CustomBow {
     private final boolean unbreakable;
     private final int delay;
 
-    public CustomBow(String id, String name, List<String> lore, boolean craftable, boolean unbreakable, int delay) {
+    private final boolean customModelSpecified;
+    private final Integer customModelData;
+
+    public CustomBow(String id, String name, List<String> lore, boolean craftable, boolean unbreakable, int delay,
+                     boolean customModelSpecified, Integer customModelData) {
         this.id = id;
         this.name = name;
         this.lore = lore;
         this.craftable = craftable;
         this.unbreakable = unbreakable;
         this.delay = delay;
+        this.customModelSpecified = customModelSpecified;
+        this.customModelData = customModelData;
     }
 
     public String getId() {
@@ -42,5 +48,13 @@ public class CustomBow {
 
     public int getDelay() {
         return delay;
+    }
+
+    public boolean isCustomModelSpecified() {
+        return customModelSpecified;
+    }
+
+    public Integer getCustomModelData() {
+        return customModelData;
     }
 }

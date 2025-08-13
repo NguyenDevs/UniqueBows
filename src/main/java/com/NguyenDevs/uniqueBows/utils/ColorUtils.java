@@ -4,6 +4,10 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 
 import java.awt.*;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.LinkedHashSet;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,51 +16,39 @@ import static net.md_5.bungee.api.ChatColor.*;
 public class ColorUtils {
 
     private static final Pattern HEX_PATTERN = Pattern.compile("#[a-fA-F0-9]{6}");
-    private static final Pattern GRADIENT_PATTERN = Pattern.compile("<gradient:#([a-fA-F0-9]{6}):#([a-fA-F0-9]{6})>(.*?)</gradient>");
+    private static final Pattern GRADIENT_PATTERN = Pattern.compile("<gradient:#([a-fA-F0-9]{6}):#([a-fA-F0-9]{6})>(.*?)</gradient>", Pattern.DOTALL);
 
     public static String colorize(String text) {
         if (text == null) return "";
-
-        // Handle gradient colors
         text = processGradients(text);
-
-        // Handle hex colors
         text = processHexColors(text);
-
-        // Handle traditional color codes
         text = ChatColor.translateAlternateColorCodes('&', text);
-
         return text;
     }
 
     private static String processGradients(String text) {
         Matcher matcher = GRADIENT_PATTERN.matcher(text);
         StringBuffer buffer = new StringBuffer();
-
         while (matcher.find()) {
             String startHex = matcher.group(1);
             String endHex = matcher.group(2);
             String content = matcher.group(3);
-
             String gradientText = createGradient(content, startHex, endHex);
-            matcher.appendReplacement(buffer, gradientText);
+            matcher.appendReplacement(buffer, Matcher.quoteReplacement(gradientText));
         }
         matcher.appendTail(buffer);
-
         return buffer.toString();
     }
 
     private static String processHexColors(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
         StringBuffer buffer = new StringBuffer();
-
         while (matcher.find()) {
             String hexColor = matcher.group();
             String replacement = convertHexToMinecraft(hexColor);
-            matcher.appendReplacement(buffer, replacement);
+            matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(buffer);
-
         return buffer.toString();
     }
 
@@ -66,47 +58,94 @@ public class ColorUtils {
         Color startColor = Color.decode("#" + startHex);
         Color endColor = Color.decode("#" + endHex);
 
-        StringBuilder gradient = new StringBuilder();
-        int length = text.length();
+        StringBuilder out = new StringBuilder();
 
-        for (int i = 0; i < length; i++) {
-            char character = text.charAt(i);
+        String stripped = stripLegacyCodesKeepState(text, out);
+        Set<ChatColor> activeFormats = new LinkedHashSet<>();
 
-            if (character == ' ') {
-                gradient.append(character);
+
+        int visibleCount = countVisibleChars(text);
+        if (visibleCount == 0) return "";
+
+        int seenVisible = 0;
+        for (int i = 0; i < text.length(); ) {
+            char c = text.charAt(i);
+
+            if ((c == '&' || c == '§') && i + 1 < text.length()) {
+                char code = Character.toLowerCase(text.charAt(i + 1));
+                applyFormatCode(code, activeFormats);
+                i += 2;
                 continue;
             }
 
-            double ratio = (double) i / Math.max(1, length - 1);
+            boolean isVisible = true;
+            if (isVisible) {
+                double ratio = visibleCount == 1 ? 1.0 : (double) seenVisible / (visibleCount - 1);
+                int red = (int) Math.round(startColor.getRed() * (1 - ratio) + endColor.getRed() * ratio);
+                int green = (int) Math.round(startColor.getGreen() * (1 - ratio) + endColor.getGreen() * ratio);
+                int blue = (int) Math.round(startColor.getBlue() * (1 - ratio) + endColor.getBlue() * ratio);
+                String hex = String.format("#%02x%02x%02x", red, green, blue);
 
-            int red = (int) (startColor.getRed() * (1 - ratio) + endColor.getRed() * ratio);
-            int green = (int) (startColor.getGreen() * (1 - ratio) + endColor.getGreen() * ratio);
-            int blue = (int) (startColor.getBlue() * (1 - ratio) + endColor.getBlue() * ratio);
+                out.append(convertHexToMinecraft(hex));
+                for (ChatColor fmt : activeFormats) out.append(fmt);
 
-            String hex = String.format("#%02x%02x%02x", red, green, blue);
-            gradient.append(convertHexToMinecraft(hex)).append(character);
+                out.append(c);
+                seenVisible++;
+            } else {
+                out.append(c);
+            }
+            i++;
         }
 
-        return gradient.toString();
+        return out.toString();
+    }
+
+    private static void applyFormatCode(char code, Set<ChatColor> active) {
+        switch (code) {
+            case 'l': active.add(ChatColor.BOLD); break;
+            case 'o': active.add(ChatColor.ITALIC); break;
+            case 'n': active.add(ChatColor.UNDERLINE); break;
+            case 'm': active.add(ChatColor.STRIKETHROUGH); break;
+            case 'k': active.add(ChatColor.MAGIC); break;
+            case 'r': active.clear(); break;
+            default:
+                if (isLegacyColorCode(code)) active.clear();
+                break;
+        }
+    }
+
+    private static boolean isLegacyColorCode(char code) {
+        return "0123456789abcdef".indexOf(code) >= 0;
+    }
+
+    private static int countVisibleChars(String s) {
+        int count = 0;
+        for (int i = 0; i < s.length(); ) {
+            char c = s.charAt(i);
+            if ((c == '&' || c == '§') && i + 1 < s.length()) {
+                i += 2;
+                continue;
+            }
+            count++;
+            i++;
+        }
+        return count;
     }
 
     private static String convertHexToMinecraft(String hex) {
         if (supportsHexColors()) {
             return ChatColor.of(hex).toString();
         } else {
-            // Fallback to closest traditional color for older versions
             return getClosestChatColor(hex).toString();
         }
     }
 
     private static boolean supportsHexColors() {
         try {
-            // Check if server supports hex colors (1.16+)
             String version = Bukkit.getServer().getBukkitVersion();
             String[] parts = version.split("\\.");
             int major = Integer.parseInt(parts[0]);
             int minor = Integer.parseInt(parts[1].split("-")[0]);
-
             return major > 1 || (major == 1 && minor >= 16);
         } catch (Exception e) {
             return false;
@@ -115,7 +154,6 @@ public class ColorUtils {
 
     private static ChatColor getClosestChatColor(String hex) {
         Color color = Color.decode(hex);
-
         ChatColor closest = ChatColor.WHITE;
         double minDistance = Double.MAX_VALUE;
 
@@ -136,7 +174,6 @@ public class ColorUtils {
                 }
             }
         }
-
         return closest;
     }
 
@@ -160,11 +197,14 @@ public class ColorUtils {
         return null;
     }
 
-
     private static double getColorDistance(Color c1, Color c2) {
         int dr = c1.getRed() - c2.getRed();
         int dg = c1.getGreen() - c2.getGreen();
         int db = c1.getBlue() - c2.getBlue();
         return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    private static String stripLegacyCodesKeepState(String s, StringBuilder out) {
+        return s;
     }
 }

@@ -2,93 +2,174 @@ package com.NguyenDevs.uniqueBows.listeners.bowlisteners;
 
 import com.NguyenDevs.uniqueBows.UniqueBows;
 import com.NguyenDevs.uniqueBows.utils.ColorUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
-// Blaze Bow Listener
 public class BlazeBowListener implements Listener {
 
+    private static final String BOW_ID = "blaze_bow";
+
     private final UniqueBows plugin;
-    private final Map<UUID, String> arrowBowMap = new HashMap<>();
 
     public BlazeBowListener(UniqueBows plugin) {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    public void onProjectileLaunch(ProjectileLaunchEvent event) {
-        if (!(event.getEntity() instanceof Arrow)) return;
-        if (!(event.getEntity().getShooter() instanceof Player)) return;
+    private boolean checkAndNotifyCooldown(Player player, String bowId) {
+        if (plugin.getBowManager().isOnCooldown(player.getUniqueId(), bowId)) {
+            long remaining = plugin.getBowManager().getRemainingCooldown(player.getUniqueId(), bowId);
+            String prefix = plugin.getConfigManager().getMessages().getString("prefix");
+            String msg = plugin.getConfigManager().getMessages().getString("bow-delay");
+            player.sendMessage(ColorUtils.colorize(prefix + " " + msg.replace("{time}", String.valueOf(remaining))));
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.6f);
+            return true;
+        }
+        return false;
+    }
 
-        Player player = (Player) event.getEntity().getShooter();
-        ItemStack bow = player.getInventory().getItemInMainHand();
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityShootBow(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        ItemStack bow = event.getBow();
+        if (bow == null) return;
 
         String bowId = plugin.getBowManager().getCustomBowId(bow);
-        if (bowId == null || !bowId.equals("blaze_bow")) return;
+        if (!BOW_ID.equals(bowId)) return;
 
-        if (!player.hasPermission("ub.use")) {
-            event.setCancelled(true);
-            player.sendMessage(ColorUtils.colorize(plugin.getConfigManager().getMessages().getString("no-permission")));
-            return;
-        }
-
-        if (plugin.getBowManager().isOnCooldown(player.getUniqueId(), bowId)) {
-            event.setCancelled(true);
-            long remaining = plugin.getBowManager().getRemainingCooldown(player.getUniqueId(), bowId);
-            String message = plugin.getConfigManager().getMessages().getString("bow-delay", "&cBạn phải đợi {time} giây nữa mới có thể sử dụng cung này!");
-            message = message.replace("{time}", String.valueOf(remaining));
-            player.sendMessage(ColorUtils.colorize(message));
-            return;
-        }
-
-        // Cancel normal arrow
         event.setCancelled(true);
-        plugin.getBowManager().setCooldown(player.getUniqueId(), bowId);
+        event.setConsumeItem(false); // Không trừ mũi tên khi bắn bằng Blaze Bow
 
-        // Create flame trail effect
-        Location start = player.getEyeLocation();
-        Vector direction = start.getDirection();
+        UUID playerId = player.getUniqueId();
+        if (!player.hasPermission("ub.use")) {
+            String prefix = plugin.getConfigManager().getMessages().getString("prefix");
+            String msg = plugin.getConfigManager().getMessages().getString("no-permission");
+            player.sendMessage(ColorUtils.colorize(prefix + " " + msg));
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.6f);
+            return;
+        }
 
-        new BukkitRunnable() {
-            int distance = 0;
-            Location current = start.clone();
+        // Kiểm tra cooldown
+        if (checkAndNotifyCooldown(player, bowId)) {
+            return;
+        }
 
-            @Override
-            public void run() {
-                if (distance > 30) {
-                    this.cancel();
-                    return;
-                }
+        // Nếu không ở chế độ sáng tạo thì phải có ít nhất 1 mũi tên mới bắn được
+        if (player.getGameMode() != org.bukkit.GameMode.CREATIVE && !hasAnyArrow(player)) {
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.6f);
+            return;
+        }
 
-                current.add(direction.clone().multiply(0.5));
-                current.getWorld().spawnParticle(org.bukkit.Particle.FLAME, current, 5, 0.1, 0.1, 0.1, 0.05);
-
-                // Check for entities hit
-                for (Entity entity : current.getWorld().getNearbyEntities(current, 1, 1, 1)) {
-                    if (entity instanceof LivingEntity && !entity.equals(player)) {
-                        LivingEntity target = (LivingEntity) entity;
-                        target.damage(8.0, player);
-                        target.setFireTicks(100);
-                        target.getWorld().spawnParticle(org.bukkit.Particle.FLAME, target.getLocation().add(0, 1, 0), 30, 0.5, 0.5, 0.5, 0.1);
-                        this.cancel();
-                        return;
-                    }
-                }
-
-                distance++;
+        // Tiêu hao 1 mũi tên nếu không ở chế độ sáng tạo
+        if (player.getGameMode() != org.bukkit.GameMode.CREATIVE) {
+            if (!consumeOneArrow(player)) {
+                return;
             }
-        }.runTaskTimer(plugin, 0, 1);
+        }
+
+        shootBlazeBeam(player, bowId);
+        plugin.getBowManager().setCooldown(playerId, bowId);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof Arrow)) return;
+        if (!(event.getEntity().getShooter() instanceof Player player)) return;
+
+        ItemStack bow = player.getInventory().getItemInMainHand();
+        if (bow == null) return;
+
+        String bowId = plugin.getBowManager().getCustomBowId(bow);
+        if (!BOW_ID.equals(bowId)) return;
+
+        // Chặn bắn nếu đang cooldown
+        if (checkAndNotifyCooldown(player, bowId)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        event.setCancelled(true); // Blaze Bow không bắn mũi tên thật
+    }
+
+    private void shootBlazeBeam(Player player, String bowId) {
+        FileConfiguration bows = plugin.getConfigManager().getBows();
+        double damage = bows.getDouble(bowId + ".damage", 8.0);
+        int burnDuration = bows.getInt(bowId + ".burn-duration", 5) * 20; // giây → ticks
+
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1.0f, 1.0f);
+        player.getWorld().playSound(player.getLocation(), Sound.ITEM_FIRECHARGE_USE, 1.0f, 1.0f);
+
+        double maxDistance = 30.0;
+        double stepSize = 0.5;
+        Vector direction = player.getLocation().getDirection().normalize();
+        Vector currentPos = player.getEyeLocation().toVector();
+
+        RayTraceResult result = player.getWorld().rayTraceEntities(
+                player.getEyeLocation(),
+                direction,
+                maxDistance,
+                0.5,
+                entity -> entity instanceof LivingEntity && entity != player
+        );
+
+        for (double distance = 0; distance <= maxDistance; distance += stepSize) {
+            currentPos.add(direction.clone().multiply(stepSize));
+            player.getWorld().spawnParticle(Particle.FLAME, currentPos.getX(), currentPos.getY(), currentPos.getZ(), 5, 0.1, 0.1, 0.1, 0.02);
+            player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, currentPos.getX(), currentPos.getY(), currentPos.getZ(), 3, 0.1, 0.1, 0.1, 0.01);
+
+            if (result != null && result.getHitEntity() != null) {
+                double hitDistance = player.getEyeLocation().distance(result.getHitEntity().getLocation());
+                if (distance >= hitDistance) {
+                    LivingEntity target = (LivingEntity) result.getHitEntity();
+                    target.damage(damage, player);
+                    target.setFireTicks(burnDuration);
+                    break;
+                }
+            }
+        }
+
+        player.getWorld().spawnParticle(Particle.FLAME, player.getEyeLocation(), 10, 0.2, 0.2, 0.2, 0.05);
+    }
+
+    private boolean hasAnyArrow(Player player) {
+        return player.getInventory().contains(Material.ARROW) ||
+                player.getInventory().contains(Material.TIPPED_ARROW) ||
+                player.getInventory().contains(Material.SPECTRAL_ARROW);
+    }
+
+    private boolean consumeOneArrow(Player player) {
+        List<Material> order = Arrays.asList(Material.ARROW, Material.TIPPED_ARROW, Material.SPECTRAL_ARROW);
+        for (Material m : order) {
+            int first = player.getInventory().first(m);
+            if (first >= 0) {
+                ItemStack stack = player.getInventory().getItem(first);
+                if (stack != null && stack.getAmount() > 0) {
+                    if (stack.getAmount() == 1) {
+                        player.getInventory().setItem(first, null);
+                    } else {
+                        stack.setAmount(stack.getAmount() - 1);
+                    }
+                    player.updateInventory();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

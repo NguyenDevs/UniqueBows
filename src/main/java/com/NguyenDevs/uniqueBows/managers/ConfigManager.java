@@ -5,8 +5,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.*;
 
 public class ConfigManager {
 
@@ -15,7 +18,6 @@ public class ConfigManager {
     private FileConfiguration messages;
     private FileConfiguration bows;
     private FileConfiguration recipes;
-
     private File configFile;
     private File messagesFile;
     private File bowsFile;
@@ -26,148 +28,176 @@ public class ConfigManager {
     }
 
     public void loadConfigs() {
-        createFiles();
-        loadDefaults();
-    }
-
-    private void createFiles() {
-        configFile = new File(plugin.getDataFolder(), "config.yml");
-        messagesFile = new File(plugin.getDataFolder(), "messages.yml");
-        bowsFile = new File(plugin.getDataFolder(), "bows.yml");
-        recipesFile = new File(plugin.getDataFolder(), "recipes.yml");
-
-        if (!plugin.getDataFolder().exists()) {
-            plugin.getDataFolder().mkdirs();
-        }
-
-        if (!configFile.exists()) {
-            plugin.saveResource("config.yml", false);
-        }
-
-        if (!messagesFile.exists()) {
-            try {
-                messagesFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (!bowsFile.exists()) {
-            try {
-                bowsFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (!recipesFile.exists()) {
-            try {
-                recipesFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        config = YamlConfiguration.loadConfiguration(configFile);
-        messages = YamlConfiguration.loadConfiguration(messagesFile);
-        bows = YamlConfiguration.loadConfiguration(bowsFile);
-        recipes = YamlConfiguration.loadConfiguration(recipesFile);
-    }
-
-    private void loadDefaults() {
-        loadDefaultConfig();
-        loadDefaultMessages();
-        loadDefaultBows();
-        loadDefaultRecipes();
+        ensureDataFolder();
+        config = loadOrCopy("config.yml");
+        messages = loadOrCopy("messages.yml");
+        bows = loadOrCopy("bows.yml");
+        recipes = loadOrCopy("recipes.yml");
+        ensureDefaultConfig(config);
+        ensureDefaultMessages(messages);
+        ensureDefaultBows(bows);
+        ensureDefaultRecipes(recipes);
         saveConfigs();
     }
 
-    private void loadDefaultConfig() {
-        if (!config.contains("version")) {
-            config.set("version", "1.0");
+    public void reloadConfigs() {
+        config = YamlConfiguration.loadConfiguration(getConfigFile());
+        messages = YamlConfiguration.loadConfiguration(getMessagesFile());
+        bows = YamlConfiguration.loadConfiguration(getBowsFile());
+        recipes = YamlConfiguration.loadConfiguration(getRecipesFile());
+        mergeDefaults(config, "config.yml");
+        mergeDefaults(messages, "messages.yml");
+        mergeDefaults(bows, "bows.yml");
+        mergeDefaults(recipes, "recipes.yml");
+        ensureDefaultConfig(config);
+        ensureDefaultMessages(messages);
+        ensureDefaultBows(bows);
+        ensureDefaultRecipes(recipes);
+        saveConfigs();
+    }
+
+    private void ensureDataFolder() {
+        File data = plugin.getDataFolder();
+        if (!data.exists()) data.mkdirs();
+    }
+
+    private FileConfiguration loadOrCopy(String fileName) {
+        File file = new File(plugin.getDataFolder(), fileName);
+        if (!file.exists()) plugin.saveResource(fileName, false);
+        FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+        mergeDefaults(cfg, fileName);
+        switch (fileName) {
+            case "config.yml": configFile = file; break;
+            case "messages.yml": messagesFile = file; break;
+            case "bows.yml": bowsFile = file; break;
+            case "recipes.yml": recipesFile = file; break;
         }
-        if (!config.contains("debug")) {
-            config.set("debug", false);
-        }
-        if (!config.contains("update-check")) {
-            config.set("update-check", true);
+        return cfg;
+    }
+
+    private void mergeDefaults(FileConfiguration cfg, String resourceName) {
+        try (InputStream in = plugin.getResource(resourceName)) {
+            if (in != null) {
+                YamlConfiguration def = YamlConfiguration.loadConfiguration(
+                        new InputStreamReader(in, StandardCharsets.UTF_8));
+                for (String key : def.getKeys(true)) {
+                    if (!cfg.contains(key)) {
+                        cfg.set(key, def.get(key));
+                    }
+                }
+            }
+        } catch (IOException ignored) {}
+    }
+
+    private void ensureDefaultConfig(FileConfiguration cfg) {
+        addIfAbsent(cfg, "version", "1.0");
+        addIfAbsent(cfg, "debug", false);
+        addIfAbsent(cfg, "update-check", true);
+    }
+
+    private void ensureDefaultMessages(FileConfiguration msg) {
+        Map<String, Object> defaults = new LinkedHashMap<>();
+        defaults.put("prefix", "&6[UniqueBows] &r");
+        defaults.put("no-permission", "&cYou don't have permission to use this command!");
+        defaults.put("plugin-reloaded", "&aPlugin reloaded successfully!");
+        defaults.put("player-only", "&cOnly players can use this command!");
+        defaults.put("unknown-command", "&cUnknown command! Use &e/ub &cto see the command list.");
+        defaults.put("bow-received", "&aYou have received {bow}&a!");
+        defaults.put("bow-delay", "&cYou must wait &e{time} &cseconds before using this bow again!");
+        defaults.put("bow-not-found", "&cBow not found!");
+        defaults.put("recipe-not-found", "&cRecipe for this bow not found!");
+        defaults.put("menu-title", "&6&lUnique Bows Menu");
+        defaults.put("admin-menu-title", "&c&lAdmin Bows Menu");
+        defaults.put("recipe-menu-title", "&e&lBow Recipes");
+        defaults.put("menu-border-name", "&7");
+        defaults.put("recipe-view-lore", "&e&lClick to view the recipe!");
+        defaults.put("admin-get-bow", "&a&lClick to get this bow!");
+        defaults.put("back-button", "&c&lBack");
+        defaults.put("recipe-result", "&a&lResult");
+        defaults.put("command-help.header", "&6&l=== UniqueBows Commands ===");
+        defaults.put("command-help.user-commands", "&e&lPlayer Commands:");
+        defaults.put("command-help.admin-commands", "&c&lAdmin Commands:");
+        defaults.put("command-help.menu", "&e/ub menu &7- Open the bow list menu");
+        defaults.put("command-help.recipe", "&e/ub recipe &7- View crafting recipes");
+        defaults.put("command-help.admin", "&c/ub admin &7- Open the admin menu");
+        defaults.put("command-help.reload", "&c/ub reload &7- Reload the plugin");
+        defaults.put("command-help.footer", "&6&l==========================");
+        defaults.put("effects.ice.freeze", "&b{target} has been frozen!");
+        defaults.put("effects.fire.burn", "&c{target} is burning!");
+        defaults.put("effects.wither.hit", "&8A wither skull has struck {target}!");
+        defaults.put("effects.poison.poisoned", "&2{target} has been poisoned!");
+        defaults.put("effects.thunder.struck", "&d{target} was struck by lightning!");
+        defaults.put("effects.teleport.success", "&aTeleport successful!");
+        defaults.put("effects.teleport.failed", "&cUnable to teleport to this location!");
+        defaults.put("effects.auto.arrows-shot", "&9Shot {count} arrows!");
+        defaults.put("effects.blaze.flame-hit", "&eFlame hit {target}!");
+        defaults.put("effects.pulsar.black-hole", "&5A black hole has been created!");
+        defaults.put("errors.bow-creation-failed", "&cFailed to create bow!");
+        defaults.put("errors.recipe-load-failed", "&cFailed to load recipe!");
+        defaults.put("errors.config-save-failed", "&cFailed to save configuration!");
+        defaults.put("errors.permission-denied", "&cYou don't have permission to use this feature!");
+        defaults.put("success.bow-given", "&aGave {bow} &ato {player}!");
+        defaults.put("success.config-saved", "&aConfiguration saved!");
+        defaults.put("success.recipe-registered", "&aRecipe for {bow} has been registered!");
+        defaults.put("admin.bow-list-header", "&c&l=== Admin Bow List ===");
+        defaults.put("admin.bow-info", "&7ID: &f{id} &7| &7Name: {name} &7| &7Delay: &f{delay}s");
+        defaults.put("admin.bow-status", "&7Enabled: {enabled} &7| &7Craftable: {craftable}");
+        defaults.put("admin.reload-complete", "&aPlugin reload complete! Loaded {bows} bows and {recipes} recipes.");
+        for (Map.Entry<String, Object> e : defaults.entrySet()) {
+            addIfAbsent(msg, e.getKey(), e.getValue());
         }
     }
 
-    private void loadDefaultMessages() {
-        if (!messages.contains("no-permission")) {
-            messages.set("no-permission", "&cBạn không có quyền để sử dụng lệnh này!");
-        }
-        if (!messages.contains("plugin-reloaded")) {
-            messages.set("plugin-reloaded", "&aPlugin đã được reload thành công!");
-        }
-        if (!messages.contains("bow-received")) {
-            messages.set("bow-received", "&aB bạn đã nhận được {bow}!");
-        }
-        if (!messages.contains("bow-delay")) {
-            messages.set("bow-delay", "&cBạn phải đợi {time} giây nữa mới có thể sử dụng cung này!");
-        }
-        if (!messages.contains("menu-title")) {
-            messages.set("menu-title", "&6&lUnique Bows Menu");
-        }
-        if (!messages.contains("admin-menu-title")) {
-            messages.set("admin-menu-title", "&c&lAdmin Bows Menu");
-        }
-        if (!messages.contains("recipe-menu-title")) {
-            messages.set("recipe-menu-title", "&e&lBow Recipes");
-        }
-    }
-
-    private void loadDefaultBows() {
-        String[] bowTypes = {"ice_bow", "fire_bow", "wither_bow", "earthquake_bow",
+    private void ensureDefaultBows(FileConfiguration b) {
+        List<String> ids = Arrays.asList(
+                "ice_bow", "fire_bow", "wither_bow", "earthquake_bow",
                 "meteor_bow", "poison_bow", "blaze_bow", "auto_bow",
-                "thunder_bow", "pulsar_bow", "teleport_bow"};
+                "thunder_bow", "pulsar_bow", "teleport_bow"
+        );
+        for (String id : ids) {
+            addIfAbsent(b, id + ".enabled", true);
+            addIfAbsent(b, id + ".custom-model-data", "none");
+            addIfAbsent(b, id + ".name", getDefaultBowName(id));
+            addIfAbsent(b, id + ".lore", getDefaultBowLore(id));
+            addIfAbsent(b, id + ".craftable", true);
+            addIfAbsent(b, id + ".unbreakable", true);
+            addIfAbsent(b, id + ".delay", getDefaultDelay(id));
+        }
+    }
 
-        for (String bowType : bowTypes) {
-            if (!bows.contains(bowType)) {
-                bows.set(bowType + ".enabled", true);
-                bows.set(bowType + ".name", getDefaultBowName(bowType));
-                bows.set(bowType + ".lore", getDefaultBowLore(bowType));
-                bows.set(bowType + ".craftable", true);
-                bows.set(bowType + ".unbreakable", true);
-                bows.set(bowType + ".delay", getDefaultDelay(bowType));
+    private void ensureDefaultRecipes(FileConfiguration r) {
+        if (!r.contains("ice_bow")) {
+            r.set("ice_bow.shape", Arrays.asList(" SI", "S B", " SI"));
+            r.set("ice_bow.ingredients.S", "STICK");
+            r.set("ice_bow.ingredients.I", "ICE");
+            r.set("ice_bow.ingredients.B", "BOW");
+        }
+        if (!r.contains("fire_bow")) {
+            r.set("fire_bow.shape", Arrays.asList(" SF", "S B", " SF"));
+            r.set("fire_bow.ingredients.S", "STICK");
+            r.set("fire_bow.ingredients.F", "FIRE_CHARGE");
+            r.set("fire_bow.ingredients.B", "BOW");
+        }
+        List<String> others = Arrays.asList(
+                "wither_bow", "earthquake_bow", "meteor_bow", "poison_bow",
+                "blaze_bow", "auto_bow", "thunder_bow", "pulsar_bow", "teleport_bow"
+        );
+        for (String id : others) {
+            if (!r.contains(id)) {
+                r.set(id + ".shape", Arrays.asList(" SM", "S B", " SM"));
+                r.set(id + ".ingredients.S", "STICK");
+                r.set(id + ".ingredients.M", getDefaultRecipeItem(id));
+                r.set(id + ".ingredients.B", "BOW");
             }
         }
     }
 
-    private void loadDefaultRecipes() {
-        // Ice Bow Recipe
-        if (!recipes.contains("ice_bow")) {
-            recipes.set("ice_bow.shape", Arrays.asList(" SI", "S B", " SI"));
-            recipes.set("ice_bow.ingredients.S", "STICK");
-            recipes.set("ice_bow.ingredients.I", "ICE");
-            recipes.set("ice_bow.ingredients.B", "BOW");
-        }
-
-        // Fire Bow Recipe
-        if (!recipes.contains("fire_bow")) {
-            recipes.set("fire_bow.shape", Arrays.asList(" SF", "S B", " SF"));
-            recipes.set("fire_bow.ingredients.S", "STICK");
-            recipes.set("fire_bow.ingredients.F", "FIRE_CHARGE");
-            recipes.set("fire_bow.ingredients.B", "BOW");
-        }
-
-        // Continue for other bows...
-        String[] bowTypes = {"wither_bow", "earthquake_bow", "meteor_bow", "poison_bow",
-                "blaze_bow", "auto_bow", "thunder_bow", "pulsar_bow", "teleport_bow"};
-
-        for (String bowType : bowTypes) {
-            if (!recipes.contains(bowType)) {
-                recipes.set(bowType + ".shape", Arrays.asList(" SM", "S B", " SM"));
-                recipes.set(bowType + ".ingredients.S", "STICK");
-                recipes.set(bowType + ".ingredients.M", getDefaultRecipeItem(bowType));
-                recipes.set(bowType + ".ingredients.B", "BOW");
-            }
-        }
+    private void addIfAbsent(FileConfiguration cfg, String path, Object value) {
+        if (!cfg.contains(path)) cfg.set(path, value);
     }
 
-    private String getDefaultBowName(String bowType) {
-        switch (bowType) {
+    private String getDefaultBowName(String id) {
+        switch (id) {
             case "ice_bow": return "&b&lIce Bow";
             case "fire_bow": return "&c&lFire Bow";
             case "wither_bow": return "&8&lWither Bow";
@@ -183,25 +213,25 @@ public class ConfigManager {
         }
     }
 
-    private String[] getDefaultBowLore(String bowType) {
-        switch (bowType) {
-            case "ice_bow": return new String[]{"&7Đóng băng kẻ địch khi bắn trúng", "&7Delay: 5 giây"};
-            case "fire_bow": return new String[]{"&7Gây cháy kẻ địch khi bắn trúng", "&7Delay: 3 giây"};
-            case "wither_bow": return new String[]{"&7Bắn đầu lâu wither", "&7Delay: 8 giây"};
-            case "earthquake_bow": return new String[]{"&7Gây động đất tại vị trí kẻ địch", "&7Delay: 15 giây"};
-            case "meteor_bow": return new String[]{"&7Triệu hồi thiên thạch", "&7Delay: 20 giây"};
-            case "poison_bow": return new String[]{"&7Gây độc cho kẻ địch", "&7Delay: 4 giây"};
-            case "blaze_bow": return new String[]{"&7Bắn tia lửa gây bỏng cháy", "&7Delay: 6 giây"};
-            case "auto_bow": return new String[]{"&7Bắn liên tục nhiều mũi tên", "&7Delay: 10 giây"};
-            case "thunder_bow": return new String[]{"&7Gây sấm sét tại kẻ địch", "&7Delay: 12 giây"};
-            case "pulsar_bow": return new String[]{"&7Tạo hố đen hút kẻ địch", "&7Delay: 25 giây"};
-            case "teleport_bow": return new String[]{"&7Dịch chuyển đến vị trí bắn", "&7Delay: 8 giây"};
-            default: return new String[]{"&7Unknown bow"};
+    private List<String> getDefaultBowLore(String id) {
+        switch (id) {
+            case "ice_bow": return Arrays.asList("&7Freeze enemies on hit", "&7Delay: 5s");
+            case "fire_bow": return Arrays.asList("&7Ignite enemies on hit", "&7Delay: 3s");
+            case "wither_bow": return Arrays.asList("&7Shoot wither skulls", "&7Delay: 8s");
+            case "earthquake_bow": return Arrays.asList("&7Trigger an earthquake", "&7Delay: 15s");
+            case "meteor_bow": return Arrays.asList("&7Summon a meteor", "&7Delay: 20s");
+            case "poison_bow": return Arrays.asList("&7Poison on hit", "&7Delay: 4s");
+            case "blaze_bow": return Arrays.asList("&7Flame burst on hit", "&7Delay: 6s");
+            case "auto_bow": return Arrays.asList("&7Rapid multi-shot", "&7Delay: 10s");
+            case "thunder_bow": return Arrays.asList("&7Call down lightning", "&7Delay: 12s");
+            case "pulsar_bow": return Arrays.asList("&7Create a black hole", "&7Delay: 25s");
+            case "teleport_bow": return Arrays.asList("&7Teleport to arrow", "&7Delay: 8s");
+            default: return Collections.singletonList("&7Unknown bow");
         }
     }
 
-    private int getDefaultDelay(String bowType) {
-        switch (bowType) {
+    private int getDefaultDelay(String id) {
+        switch (id) {
             case "ice_bow": return 5;
             case "fire_bow": return 3;
             case "wither_bow": return 8;
@@ -217,8 +247,8 @@ public class ConfigManager {
         }
     }
 
-    private String getDefaultRecipeItem(String bowType) {
-        switch (bowType) {
+    private String getDefaultRecipeItem(String id) {
+        switch (id) {
             case "wither_bow": return "WITHER_SKELETON_SKULL";
             case "earthquake_bow": return "COBBLESTONE";
             case "meteor_bow": return "MAGMA_BLOCK";
@@ -234,28 +264,37 @@ public class ConfigManager {
 
     public void saveConfigs() {
         try {
-            config.save(configFile);
-            messages.save(messagesFile);
-            bows.save(bowsFile);
-            recipes.save(recipesFile);
+            if (config != null) config.save(getConfigFile());
+            if (messages != null) messages.save(getMessagesFile());
+            if (bows != null) bows.save(getBowsFile());
+            if (recipes != null) recipes.save(getRecipesFile());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public FileConfiguration getConfig() {
-        return config;
+    private File getConfigFile() {
+        if (configFile == null) configFile = new File(plugin.getDataFolder(), "config.yml");
+        return configFile;
     }
 
-    public FileConfiguration getMessages() {
-        return messages;
+    private File getMessagesFile() {
+        if (messagesFile == null) messagesFile = new File(plugin.getDataFolder(), "messages.yml");
+        return messagesFile;
     }
 
-    public FileConfiguration getBows() {
-        return bows;
+    private File getBowsFile() {
+        if (bowsFile == null) bowsFile = new File(plugin.getDataFolder(), "bows.yml");
+        return bowsFile;
     }
 
-    public FileConfiguration getRecipes() {
-        return recipes;
+    private File getRecipesFile() {
+        if (recipesFile == null) recipesFile = new File(plugin.getDataFolder(), "recipes.yml");
+        return recipesFile;
     }
+
+    public FileConfiguration getConfig() { return config; }
+    public FileConfiguration getMessages() { return messages; }
+    public FileConfiguration getBows() { return bows; }
+    public FileConfiguration getRecipes() { return recipes; }
 }

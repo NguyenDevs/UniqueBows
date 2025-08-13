@@ -10,7 +10,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
@@ -36,7 +35,6 @@ public class BowManager {
             plugin.getLogger().warning("No 'bows' section found in config.");
             return;
         }
-
         for (String bowId : bowsSection.getKeys(false)) {
             ConfigurationSection bowSection = bowsSection.getConfigurationSection(bowId);
             if (bowSection != null && bowSection.getBoolean("enabled", true)) {
@@ -44,7 +42,6 @@ public class BowManager {
                 customBows.put(bowId, bow);
             }
         }
-
         plugin.getLogger().info("Loaded " + customBows.size() + " custom bows!");
     }
 
@@ -56,7 +53,24 @@ public class BowManager {
         boolean craftable = section.getBoolean("craftable", true);
         boolean unbreakable = section.getBoolean("unbreakable", false);
         int delay = section.getInt("delay", 5);
-        return new CustomBow(bowId, name, colorizedLore, craftable, unbreakable, delay);
+
+        boolean customModelSpecified = section.contains("custom-model-data");
+        Integer customModelData = null;
+        if (customModelSpecified) {
+            if (section.isInt("custom-model-data")) {
+                customModelData = section.getInt("custom-model-data");
+            } else {
+                Object raw = section.get("custom-model-data");
+                if (raw != null) {
+                    String s = String.valueOf(raw).trim();
+                    if (!s.equalsIgnoreCase("none")) {
+                        try { customModelData = Integer.parseInt(s); } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+        }
+
+        return new CustomBow(bowId, name, colorizedLore, craftable, unbreakable, delay, customModelSpecified, customModelData);
     }
 
     public ItemStack createBowItem(String bowId) {
@@ -78,7 +92,12 @@ public class BowManager {
         meta.addEnchant(Enchantment.DURABILITY, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
-        meta.setCustomModelData(getBowModelData(bowId));
+        if (bow.isCustomModelSpecified()) {
+            Integer cmd = bow.getCustomModelData();
+            if (cmd != null) meta.setCustomModelData(cmd);
+        } else {
+            meta.setCustomModelData(getBowModelData(bowId));
+        }
 
         NamespacedKey key = new NamespacedKey(plugin, PDC_KEY_BOW_ID);
         meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, bowId);

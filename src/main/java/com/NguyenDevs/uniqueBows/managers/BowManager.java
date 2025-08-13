@@ -4,15 +4,20 @@ import com.NguyenDevs.uniqueBows.UniqueBows;
 import com.NguyenDevs.uniqueBows.models.CustomBow;
 import com.NguyenDevs.uniqueBows.utils.ColorUtils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
 public class BowManager {
+
+    private static final String PDC_KEY_BOW_ID = "bow-id";
 
     private final UniqueBows plugin;
     private final Map<String, CustomBow> customBows;
@@ -27,6 +32,10 @@ public class BowManager {
     public void loadBows() {
         customBows.clear();
         ConfigurationSection bowsSection = plugin.getConfigManager().getBows();
+        if (bowsSection == null) {
+            plugin.getLogger().warning("No 'bows' section found in config.");
+            return;
+        }
 
         for (String bowId : bowsSection.getKeys(false)) {
             ConfigurationSection bowSection = bowsSection.getConfigurationSection(bowId);
@@ -42,15 +51,11 @@ public class BowManager {
     private CustomBow loadBowFromConfig(String bowId, ConfigurationSection section) {
         String name = ColorUtils.colorize(section.getString("name", "&fUnnamed Bow"));
         List<String> loreList = section.getStringList("lore");
-        List<String> colorizedLore = new ArrayList<>();
-        for (String line : loreList) {
-            colorizedLore.add(ColorUtils.colorize(line));
-        }
-
+        List<String> colorizedLore = new ArrayList<>(loreList.size());
+        for (String line : loreList) colorizedLore.add(ColorUtils.colorize(line));
         boolean craftable = section.getBoolean("craftable", true);
         boolean unbreakable = section.getBoolean("unbreakable", false);
         int delay = section.getInt("delay", 5);
-
         return new CustomBow(bowId, name, colorizedLore, craftable, unbreakable, delay);
     }
 
@@ -60,6 +65,7 @@ public class BowManager {
 
         ItemStack item = new ItemStack(Material.BOW);
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
 
         meta.setDisplayName(bow.getName());
         meta.setLore(bow.getLore());
@@ -69,12 +75,13 @@ public class BowManager {
             meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         }
 
-        // Add enchant glow
         meta.addEnchant(Enchantment.DURABILITY, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
-        // Add custom model data or NBT to identify the bow
         meta.setCustomModelData(getBowModelData(bowId));
+
+        NamespacedKey key = new NamespacedKey(plugin, PDC_KEY_BOW_ID);
+        meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, bowId);
 
         item.setItemMeta(meta);
         return item;
@@ -83,21 +90,20 @@ public class BowManager {
     public boolean isCustomBow(ItemStack item) {
         if (item == null || item.getType() != Material.BOW) return false;
         if (!item.hasItemMeta()) return false;
-
         ItemMeta meta = item.getItemMeta();
-        return meta.hasCustomModelData() && getCustomBowId(item) != null;
+        if (meta == null) return false;
+        NamespacedKey key = new NamespacedKey(plugin, PDC_KEY_BOW_ID);
+        String id = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+        return id != null && customBows.containsKey(id);
     }
 
     public String getCustomBowId(ItemStack item) {
-        if (!isCustomBow(item)) return null;
-
-        int modelData = item.getItemMeta().getCustomModelData();
-        for (Map.Entry<String, CustomBow> entry : customBows.entrySet()) {
-            if (getBowModelData(entry.getKey()) == modelData) {
-                return entry.getKey();
-            }
-        }
-        return null;
+        if (item == null || item.getType() != Material.BOW) return null;
+        if (!item.hasItemMeta()) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
+        NamespacedKey key = new NamespacedKey(plugin, PDC_KEY_BOW_ID);
+        return meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
     }
 
     public CustomBow getCustomBow(String bowId) {
@@ -111,39 +117,31 @@ public class BowManager {
     public boolean isOnCooldown(UUID playerId, String bowId) {
         Map<String, Long> playerCooldown = playerCooldowns.get(playerId);
         if (playerCooldown == null) return false;
-
         Long lastUse = playerCooldown.get(bowId);
         if (lastUse == null) return false;
-
         CustomBow bow = customBows.get(bowId);
         if (bow == null) return false;
-
-        long cooldownTime = bow.getDelay() * 1000L; // Convert to milliseconds
+        long cooldownTime = bow.getDelay() * 1000L;
         return (System.currentTimeMillis() - lastUse) < cooldownTime;
     }
 
     public void setCooldown(UUID playerId, String bowId) {
-        playerCooldowns.computeIfAbsent(playerId, k -> new HashMap<>())
-                .put(bowId, System.currentTimeMillis());
+        playerCooldowns.computeIfAbsent(playerId, k -> new HashMap<>()).put(bowId, System.currentTimeMillis());
     }
 
     public long getRemainingCooldown(UUID playerId, String bowId) {
         Map<String, Long> playerCooldown = playerCooldowns.get(playerId);
         if (playerCooldown == null) return 0;
-
         Long lastUse = playerCooldown.get(bowId);
         if (lastUse == null) return 0;
-
         CustomBow bow = customBows.get(bowId);
         if (bow == null) return 0;
-
         long cooldownTime = bow.getDelay() * 1000L;
         long remaining = cooldownTime - (System.currentTimeMillis() - lastUse);
-        return Math.max(0, remaining / 1000L); // Convert back to seconds
+        return Math.max(0, remaining / 1000L);
     }
 
     private int getBowModelData(String bowId) {
-        // Simple hash to generate unique model data for each bow
-        return Math.abs(bowId.hashCode() % 1000000) + 100000;
+        return Math.abs(bowId.hashCode() % 1_000_000) + 100_000;
     }
 }
